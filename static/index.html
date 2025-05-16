@@ -4,17 +4,96 @@
   <meta charset="utf-8">
   <title>Lens4U Chatbot</title>
   <style>
-    body { font-family: sans-serif; margin: 2rem; }
-    #chat { border: 1px solid #ccc; padding: 1rem; height: 400px; overflow-y: scroll; }
-    .user { text-align: right; color: blue; }
-    .bot  { text-align: left; color: green; }
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #chat {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      height: 400px;
+      width: 100%;
+      max-width: 600px;
+      overflow-y: scroll;
+      background-color: #f9f9f9;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+    }
+
+    .user, .bot {
+      padding: 0.5rem 1rem;
+      margin: 0.3rem 0;
+      max-width: 80%;
+      border-radius: 15px;
+      display: inline-block;
+      clear: both;
+    }
+
+    .user {
+      background-color: #d0ebff;
+      color: #003366;
+      float: right;
+      text-align: right;
+    }
+
+    .bot {
+      background-color: #e6ffe6;
+      color: #003300;
+      float: left;
+      text-align: left;
+    }
+
+    #msg {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 70%;
+      max-width: 400px;
+      min-height: 2.2rem;
+      max-height: 6rem;
+      margin-right: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      overflow-y: auto;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      background-color: #0077cc;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #suggestions button {
+      margin: 0.3rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #0077cc;
+      background-color: white;
+      color: #0077cc;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #suggestions button:hover {
+      background-color: #e6f2ff;
+    }
   </style>
 </head>
 <body>
   <h1>Lens4U Chatbot</h1>
   <div id="chat"></div>
   <div id="suggestions" style="margin-top: 1rem;"></div>
-  <input id="msg" placeholder="Type your message…" autofocus/>
+  <textarea id="msg" placeholder="Type your message…" rows="1" style="resize: none;"></textarea>
   <button onclick="send()">Send</button>
 
   <script src="/static/app.js"></script>

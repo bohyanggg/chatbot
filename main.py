@@ -1,5 +1,6 @@
 import os
 import json
+import numpy as np
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -28,6 +29,26 @@ with open("faqs.json") as f:
 with open("myths.json") as f:
     myths = json.load(f)
 
+# Initialize OpenAI client and cache embeddings
+client = OpenAI()
+faq_vectors = []
+myth_vectors = []
+
+def get_embedding(text):
+    response = client.embeddings.create(
+        input=[text],
+        model="text-embedding-ada-002"
+    )
+    return np.array(response.data[0].embedding)
+
+for item in faqs:
+    item['embedding'] = get_embedding(item['question'])
+    faq_vectors.append(item)
+
+for item in myths:
+    item['embedding'] = get_embedding(item['myth'])
+    myth_vectors.append(item)
+
 # Request schema
 class ChatRequest(BaseModel):
     session_id: str
@@ -35,21 +56,36 @@ class ChatRequest(BaseModel):
 
 # Helper functions
 def find_faq_answer(msg: str) -> str | None:
-    for item in faqs:
-        if msg.lower() == item["question"].lower():
-            return item["answer"]
+    msg_vector = get_embedding(msg)
+    best_match = None
+    best_score = 0.0
+    for item in faq_vectors:
+        score = np.dot(msg_vector, item['embedding']) / (np.linalg.norm(msg_vector) * np.linalg.norm(item['embedding']))
+        if score > best_score:
+            best_score = score
+            best_match = item
+    if best_score > 0.9:
+        return best_match["answer"]
     return None
 
 def find_myth_bust(msg: str) -> str | None:
-    for item in myths:
-        if msg.lower() == item["myth"].lower():
-            return item["bust"]
+    msg_vector = get_embedding(msg)
+    best_match = None
+    best_score = 0.0
+    for item in myth_vectors:
+        score = np.dot(msg_vector, item['embedding']) / (np.linalg.norm(msg_vector) * np.linalg.norm(item['embedding']))
+        if score > best_score:
+            best_score = score
+            best_match = item
+    if best_score > 0.9:
+        return best_match["bust"]
     return None
 
 # Chat endpoint
 @app.post("/chat")
 async def chat(req: ChatRequest):
-    session = sessions.setdefault(req.session_id, {})
+    session = {}
+    sessions[req.session_id] = session
     msg = req.message.strip()
 
     if not msg and "history" not in session:
@@ -84,7 +120,7 @@ async def chat(req: ChatRequest):
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant specialized in contact lens guidance."},
+                    {"role": "system", "content": "You are the Lens4U assistant, a helpful assistant specialized in contact lens guidance."},
                     *context
                 ],
                 max_tokens=150,
